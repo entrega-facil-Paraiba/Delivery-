@@ -10,8 +10,9 @@
         h2 { color: #075e54; text-align: center; }
         label { font-weight: bold; display: block; margin-top: 10px; color: #333; }
         input { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 15px; background-color: #25d366; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
-        button:hover { background-color: #128c7e; }
+        .btn-loc { background-color: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; width: 100%; font-weight: bold; }
+        button#enviar { width: 100%; padding: 15px; background-color: #25d366; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        button:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -26,15 +27,32 @@
     <input type="tel" id="whatsapp_cliente" placeholder="(00) 00000-0000" required>
     
     <label>Endereço Completo:</label>
-    <input type="text" id="endereco" placeholder="Rua, número, bairro" required>
+    <button class="btn-loc" onclick="pegarLocalizacao()">📍 Enviar minha Localização Atual</button>
+    <input type="text" id="endereco" placeholder="Rua, número, bairro ou link do GPS" required>
     
     <label>Ponto de Referência:</label>
     <input type="text" id="referencia" placeholder="Ex: Perto do mercado">
 
-    <button onclick="enviarWhatsApp()">Finalizar e Enviar no WhatsApp</button>
+    <button id="enviar" onclick="enviarWhatsApp()">Finalizar e Enviar no WhatsApp</button>
 </div>
 
 <script>
+    function pegarLocalizacao() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const urlGps = `https://www.google.com/maps?q=${lat},${lon}`;
+                document.getElementById('endereco').value = urlGps;
+                alert("Localização capturada com sucesso!");
+            }, function() {
+                alert("Não foi possível pegar sua localização. Por favor, digite o endereço manualmente.");
+            });
+        } else {
+            alert("Seu navegador não suporta GPS.");
+        }
+    }
+
     function enviarWhatsApp() {
         const nome = document.getElementById('nome').value;
         const zapCliente = document.getElementById('whatsapp_cliente').value;
@@ -50,7 +68,7 @@
         const mensagem = `*NOVO PEDIDO DE ENTREGA*%0A%0A` +
                          `*Nome:* ${nome}%0A` +
                          `*WhatsApp Cliente:* ${zapCliente}%0A` +
-                         `*Endereço:* ${endereco}%0A` +
+                         `*Endereço/GPS:* ${endereco}%0A` +
                          `*Referência:* ${referencia}`;
 
         const url = `https://api.whatsapp.com/send?phone=${meuNumero}&text=${mensagem}`;
