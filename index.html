@@ -10,10 +10,11 @@
         h2 { color: #075e54; text-align: center; }
         label { font-weight: bold; display: block; margin-top: 10px; color: #333; }
         input { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn-loc { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 5px; margin-bottom: 15px; width: 100%; font-weight: bold; font-size: 14px; }
+        .btn-loc { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 5px; margin-bottom: 15px; width: 100%; font-weight: bold; font-size: 14px; transition: 0.3s; }
+        .btn-loc:disabled { background-color: #95a5a6; cursor: not-allowed; }
         button#enviar { width: 100%; padding: 15px; background-color: #25d366; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
         button:hover { opacity: 0.9; }
-        .status-loc { font-size: 12px; color: #27ae60; display: none; margin-bottom: 10px; font-weight: bold; }
+        .status-loc { font-size: 12px; color: #27ae60; display: none; margin-bottom: 10px; font-weight: bold; text-align: center; }
     </style>
 </head>
 <body>
@@ -34,32 +35,52 @@
     <input type="text" id="referencia" placeholder="Ex: Perto do mercado">
 
     <label>Localização GPS (Opcional):</label>
-    <button class="btn-loc" onclick="pegarLocalizacao()">📍 Enviar minha Localização Atual</button>
-    <div id="status" class="status-loc">✅ Localização capturada!</div>
+    <button id="btnGps" class="btn-loc" onclick="pegarLocalizacao()">📍 Enviar minha Localização Atual</button>
+    <div id="status" class="status-loc">✅ Localização capturada com sucesso!</div>
     <input type="hidden" id="link_gps" value="Não enviado">
 
     <button id="enviar" onclick="enviarWhatsApp()">Finalizar e Enviar no WhatsApp</button>
 </div>
 
 <script>
+    let carregandoGps = false;
+
     function pegarLocalizacao() {
+        const btn = document.getElementById('btnGps');
+        carregandoGps = true;
+        btn.disabled = true;
+        btn.innerText = "Buscando sinal do GPS... ⏳";
+
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 const urlGps = `https://www.google.com/maps?q=${lat},${lon}`;
+                
                 document.getElementById('link_gps').value = urlGps;
                 document.getElementById('status').style.display = "block";
-                alert("Localização capturada com sucesso!");
+                
+                carregandoGps = false;
+                btn.disabled = false;
+                btn.innerText = "📍 Localização Atualizada!";
+                btn.style.backgroundColor = "#27ae60";
             }, function() {
-                alert("Não foi possível acessar o GPS. Verifique se a localização do seu celular está ativa.");
-            });
+                alert("Erro ao acessar GPS. Digite o endereço manualmente.");
+                carregandoGps = false;
+                btn.disabled = false;
+                btn.innerText = "📍 Tentar Localização novamente";
+            }, { enableHighAccuracy: true, timeout: 10000 });
         } else {
             alert("Seu navegador não suporta GPS.");
         }
     }
 
     function enviarWhatsApp() {
+        if(carregandoGps) {
+            alert("Aguarde um instante! Estamos terminando de pegar sua localização GPS...");
+            return;
+        }
+
         const nome = document.getElementById('nome').value;
         const zapCliente = document.getElementById('whatsapp_cliente').value;
         const endereco = document.getElementById('endereco').value;
