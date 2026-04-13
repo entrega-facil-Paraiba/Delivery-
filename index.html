@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Entrega</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; display: flex; justify-content: center; }
+        .container { max-width: 400px; width: 100%; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #075e54; text-align: center; }
+        label { font-weight: bold; display: block; margin-top: 10px; color: #333; }
+        input { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background-color: #25d366; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #128c7e; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Dados para Entrega</h2>
+    
+    <label>Seu Nome:</label>
+    <input type="text" id="nome" placeholder="Ex: Maria Silva" required>
+
+    <label>Seu WhatsApp:</label>
+    <input type="tel" id="whatsapp_cliente" placeholder="(00) 00000-0000" required>
+    
+    <label>Endereço Completo:</label>
+    <input type="text" id="endereco" placeholder="Rua, número, bairro" required>
+    
+    <label>Ponto de Referência:</label>
+    <input type="text" id="referencia" placeholder="Ex: Perto do mercado">
+
+    <button onclick="enviarWhatsApp()">Finalizar e Enviar no WhatsApp</button>
+</div>
+
+<script>
+    function enviarWhatsApp() {
+        const nome = document.getElementById('nome').value;
+        const zapCliente = document.getElementById('whatsapp_cliente').value;
+        const endereco = document.getElementById('endereco').value;
+        const referencia = document.getElementById('referencia').value;
+        const meuNumero = "5581996625101"; 
+
+        if(nome === "" || zapCliente === "" || endereco === "") {
+            alert("Por favor, preencha o nome, WhatsApp e endereço.");
+            return;
+        }
+
+        const mensagem = `*NOVO PEDIDO DE ENTREGA*%0A%0A` +
+                         `*Nome:* ${nome}%0A` +
+                         `*WhatsApp Cliente:* ${zapCliente}%0A` +
+                         `*Endereço:* ${endereco}%0A` +
+                         `*Referência:* ${referencia}`;
+
+        const url = `https://api.whatsapp.com/send?phone=${meuNumero}&text=${mensagem}`;
+        
+        window.open(url, '_blank');
+    }
+</script>
+
+</body>
+</html>
