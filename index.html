@@ -3,18 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário de Entrega</title>
+    <title>Dados para Entrega</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; display: flex; justify-content: center; }
-        .container { max-width: 400px; width: 100%; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #075e54; text-align: center; }
-        label { font-weight: bold; display: block; margin-top: 10px; color: #333; }
-        input { width: 100%; padding: 12px; margin: 5px 0 15px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn-loc { background-color: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 5px; margin-bottom: 15px; width: 100%; font-weight: bold; font-size: 14px; transition: 0.3s; }
-        .btn-loc:disabled { background-color: #95a5a6; cursor: not-allowed; }
-        button#enviar { width: 100%; padding: 15px; background-color: #25d366; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; margin-top: 10px; }
-        button:hover { opacity: 0.9; }
-        .status-loc { font-size: 12px; color: #27ae60; display: none; margin-bottom: 10px; font-weight: bold; text-align: center; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+
+        .container { 
+            max-width: 400px; 
+            width: 100%; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+            text-align: center;
+        }
+
+        h2 { 
+            color: #006b54; 
+            margin-bottom: 25px;
+            font-size: 26px;
+        }
+
+        label { 
+            font-weight: bold; display: block; margin-top: 15px; 
+            color: #333; text-align: left; font-size: 15px;
+        }
+
+        input { 
+            width: 100%; padding: 15px; margin-top: 5px; 
+            border: 2px solid #e0e0e0; border-radius: 12px; 
+            box-sizing: border-box; font-size: 16px; 
+            background-color: #fafafa;
+        }
+
+        /* Botão de Localização (Azul) */
+        .btn-loc { 
+            background-color: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            width: 100%; 
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Botão Enviar (Verde) */
+        .btn-enviar { 
+            width: 100%; padding: 18px; 
+            background-color: #2ecc71; color: white; 
+            border: none; border-radius: 12px; 
+            cursor: pointer; font-size: 18px; 
+            font-weight: bold; margin-top: 30px;
+            text-transform: uppercase;
+        }
+
+        #status-gps { 
+            font-size: 13px; margin-top: 8px; font-weight: bold; display: none;
+        }
     </style>
 </head>
 <body>
@@ -23,86 +81,79 @@
     <h2>Dados para Entrega</h2>
     
     <label>Seu Nome:</label>
-    <input type="text" id="nome" placeholder="Ex: Maria Silva" required>
+    <input type="text" id="nome" placeholder="Ex: Maria Silva">
 
     <label>Seu WhatsApp:</label>
-    <input type="tel" id="whatsapp_cliente" placeholder="(00) 00000-0000" required>
+    <input type="tel" id="whatsapp_cliente" placeholder="(00) 00000-0000">
     
     <label>Endereço Completo:</label>
-    <input type="text" id="endereco" placeholder="Rua, número e bairro" required>
+    <input type="text" id="endereco" placeholder="Rua, número e bairro">
     
     <label>Ponto de Referência:</label>
     <input type="text" id="referencia" placeholder="Ex: Perto do mercado">
 
     <label>Localização GPS (Opcional):</label>
-    <button id="btnGps" class="btn-loc" onclick="pegarLocalizacao()">📍 Enviar minha Localização Atual</button>
-    <div id="status" class="status-loc">✅ Localização capturada com sucesso!</div>
-    <input type="hidden" id="link_gps" value="Não enviado">
+    <button type="button" class="btn-loc" onclick="capturarLocalizacao()">
+        <span id="txt-btn"> clique aqui pra eviar sua localização atual🛰️</span>
+    </button>
+    <div id="status-gps"></div>
+    <input type="hidden" id="link_maps" value="Não informada">
 
-    <button id="enviar" onclick="enviarWhatsApp()">Finalizar e Enviar no WhatsApp</button>
+    <button class="btn-enviar" onclick="enviarPedido()">Finalizar e Enviar no WhatsApp</button>
 </div>
 
 <script>
-    let carregandoGps = false;
+    function capturarLocalizacao() {
+        const status = document.getElementById('status-gps');
+        const btnTxt = document.getElementById('txt-btn');
+        
+        status.style.display = "block";
+        status.style.color = "#3498db";
+        status.innerText = "Buscando localização... ⏳";
 
-    function pegarLocalizacao() {
-        const btn = document.getElementById('btnGps');
-        carregandoGps = true;
-        btn.disabled = true;
-        btn.innerText = "Buscando sinal do GPS... ⏳";
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const urlGps = `https://www.google.com/maps?q=${lat},${lon}`;
-                
-                document.getElementById('link_gps').value = urlGps;
-                document.getElementById('status').style.display = "block";
-                
-                carregandoGps = false;
-                btn.disabled = false;
-                btn.innerText = "📍 Localização Atualizada!";
-                btn.style.backgroundColor = "#27ae60";
-            }, function() {
-                alert("Erro ao acessar GPS. Digite o endereço manualmente.");
-                carregandoGps = false;
-                btn.disabled = false;
-                btn.innerText = "📍 Tentar Localização novamente";
-            }, { enableHighAccuracy: true, timeout: 10000 });
-        } else {
+        if (!navigator.geolocation) {
             alert("Seu navegador não suporta GPS.");
+            return;
         }
+
+        navigator.geolocation.getCurrentPosition(
+            (posicao) => {
+                const lat = posicao.coords.latitude;
+                const lon = posicao.coords.longitude;
+                // Cria o link curto do Google Maps
+                const link = `https://www.google.com/maps?q=${lat},${lon}`;
+                document.getElementById('link_maps').value = link;
+                
+                status.innerText = "✅ Localização capturada!";
+                status.style.color = "#27ae60";
+                btnTxt.innerText = "📍 Localização Atualizada!";
+            },
+            (erro) => {
+                status.innerText = "❌ Ative o GPS do celular.";
+                status.style.color = "#e74c3c";
+                alert("Por favor, autorize o acesso à localização.");
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     }
 
-    function enviarWhatsApp() {
-        if(carregandoGps) {
-            alert("Aguarde um instante! Estamos terminando de pegar sua localização GPS...");
-            return;
-        }
-
+    function enviarPedido() {
         const nome = document.getElementById('nome').value;
-        const zapCliente = document.getElementById('whatsapp_cliente').value;
-        const endereco = document.getElementById('endereco').value;
-        const referencia = document.getElementById('referencia').value;
-        const linkGps = document.getElementById('link_gps').value;
+        const zap = document.getElementById('whatsapp_cliente').value;
+        const end = document.getElementById('endereco').value;
+        const ref = document.getElementById('referencia').value;
+        const gps = document.getElementById('link_maps').value;
+        
+        // Coloque seu número aqui (com DDD)
         const meuNumero = "5581996625101"; 
 
-        if(nome === "" || zapCliente === "" || endereco === "") {
-            alert("Por favor, preencha Nome, WhatsApp e Endereço.");
+        if(!nome || !end) {
+            alert("Por favor, preencha o Nome e o Endereço!");
             return;
         }
 
-        const mensagem = `*NOVO PEDIDO DE ENTREGA*%0A%0A` +
-                         `*Nome:* ${nome}%0A` +
-                         `*WhatsApp:* ${zapCliente}%0A` +
-                         `*Endereço:* ${endereco}%0A` +
-                         `*Referência:* ${referencia}%0A` +
-                         `*Localização GPS:* ${linkGps}`;
-
-        const url = `https://api.whatsapp.com/send?phone=${meuNumero}&text=${mensagem}`;
-        
-        window.open(url, '_blank');
+        const msg = `*DADOS PARA ENTREGA*%0A%0A*Cliente:* ${nome}%0A*WhatsApp:* ${zap}%0A*Endereço:* ${end}%0A*Referência:* ${ref}%0A*Localização GPS:* ${gps}`;
+        window.open(`https://api.whatsapp.com/send?phone=${meuNumero}&text=${msg}`, '_blank');
     }
 </script>
 
